@@ -2,6 +2,19 @@
 
 pragma solidity >=0.7.0 <0.9.0;
 
+// AuctionCreator contract creates  a new instance of Auction contract
+contract AuctionCreator{
+    // Declare an dynamic array to store address of created Auction contract
+    Auction[] public createdAuctions;
+
+    // createAuction creates a new instance of Auction contract
+    function createAuction() public  {
+      // Create a new instance of Auction 
+      Auction newAuction=new Auction(msg.sender);
+      // Add auction instance to array
+      createdAuctions.push(newAuction);
+    }
+}
 
 contract Auction{
     // Declare state variables
@@ -24,9 +37,9 @@ contract Auction{
     
     uint bidIncrement;
 
-    constructor(){
-        // Convert the address to payable and assign it to owner
-        owner=payable(msg.sender);
+    constructor(address eoa){
+        // Convert the eoa(externally owned account) to payable and assign it to owner
+        owner=payable(eoa);
         // Set the action state to Running
         auctionState=State.Running;
         // Initialize the startBlock to current block
@@ -70,7 +83,7 @@ contract Auction{
     }
 
     // placeBid allows the users to bid
-    function placeBid() notOwner afterStart beforeEnd public  payable {
+    function placeBid() notOwner afterStart beforeEnd public payable {
      // Check the auctionState
         require(auctionState==State.Running,"Aucting is not running");
         // Check the value
@@ -130,6 +143,8 @@ contract Auction{
 
         }
 
+        // Reset the receipen bids to 0
+        bids[recipient]=0;
         // Send the value to recipient
         recipient.transfer(value);
     }
