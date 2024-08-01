@@ -2,7 +2,7 @@
 
 pragma solidity >=0.7.0 <0.9.0;
 
-// AuctionCreator contract creates  a new instance of Auction contract
+// AuctionCreator contract creates a new instance of Auction contract
 contract AuctionCreator{
     // Declare an dynamic array to store address of created Auction contract
     Auction[] public createdAuctions;
