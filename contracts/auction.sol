@@ -38,4 +38,100 @@ contract Auction{
         bidIncrement=100;
     }
 
+    modifier notOwner(){
+        require(msg.sender!=owner,"Owner is not allowed");
+        _;
+    }
+
+    modifier onlyOwner(){
+        require(msg.sender==owner,"Only owner is allowed");
+        _;
+    }
+
+    // Auction should start after startBlock 
+    modifier afterStart(){
+        require(block.number>=startBlock);
+        _;
+    }
+    // Auction should end before endBlock 
+    modifier beforeEnd(){
+        require(block.number<=endBlock);
+        _;
+    }
+
+    // min returns the minimum value of given values
+    function min(uint a,uint b)pure  internal returns(uint){
+        if (a<=b){
+            return a;
+        }else {
+            return b;
+        }
+        
+    }
+
+    // placeBid allows the users to bid
+    function placeBid() notOwner afterStart beforeEnd public  payable {
+     // Check the auctionState
+        require(auctionState==State.Running,"Aucting is not running");
+        // Check the value
+        require(msg.value>=100,"Minimum bidding value is 1000 wei");
+       // Get the current bid
+        uint currentBid=bids[msg.sender]+ msg.value;
+        // Check if the  currentBid is greater than highestBindingBid
+        require(currentBid>highestBindingBid);
+        // Add the bid to mapping
+        bids[msg.sender]=currentBid;
+
+       // Check if the currentBid is less or equal to highestBid
+       // If so change the highestBindingBid and keep the highestBidder same
+       // If not change the highestBindingBid as well as highestBidder
+       if(currentBid<=bids[highestBidder]){
+        highestBindingBid=min(currentBid+bidIncrement,bids[highestBidder]);
+       }else {
+        highestBindingBid=min(currentBid,bids[highestBidder]+bidIncrement);
+        highestBidder=payable(msg.sender);
+       }
+    }
+
+    // cancelAuction sets the auctionState to the Cancelled state
+    function cancelAuction()public onlyOwner{
+        auctionState=State.Cancelled;
+    }
+
+    function finalizeAuction()public  {
+        // Require conditions to finalize the auction
+        require(auctionState==State.Cancelled || block.number>endBlock ,"Auction cannot be finalized");
+        require(msg.sender==owner || bids[msg.sender]>0,"Either owner or bidder is allowed");
+        // Declare local variable for recipient and the value that recipient will get
+        address payable recipient;
+        uint value;
+
+        // 2 possible case
+        // 1. case: Auction is cancelled
+        if (auctionState==State.Cancelled){
+           recipient=payable(msg.sender);
+           value=bids[msg.sender];
+        }else {  // 2. case: Auction ended
+            // if Auction is finalized by owner, the owner will receive higest binding bid
+            if (msg.sender==owner){
+            recipient=owner;
+            value=highestBindingBid;
+            }else { // Otherwise bidder request  its funds
+                // 2 cases here:
+                // 1. case: Requested bidder is highestBidder
+                if (msg.sender==highestBidder){
+                    recipient=highestBidder;
+                    value=bids[highestBidder]-highestBindingBid;
+                }else { // 2. case: Requested bidder is neither owner nor highestBidder
+                recipient=payable(msg.sender);
+                value=bids[msg.sender];
+                }
+            }
+
+        }
+
+        // Send the value to recipient
+        recipient.transfer(value);
+    }
+
 }
