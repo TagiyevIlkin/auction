@@ -1,28 +1,29 @@
-REMIX DEFAULT WORKSPACE
+This Solidity contract defines two smart contracts: AuctionCreator and Auction. These contracts enable the creation and management of decentralized auctions on the Ethereum blockchain.
 
-Remix default workspace is present when:
-i. Remix loads for the very first time 
-ii. A new workspace is created with 'Default' template
-iii. There are no files existing in the File Explorer
+AuctionCreator Contract
+The AuctionCreator contract is responsible for creating new instances of the Auction contract. It maintains a dynamic array to store the addresses of all created auctions. The key functionality includes:
 
-This workspace contains 3 directories:
+  createAuction(): Deploys a new Auction contract and stores its address.
 
-1. 'contracts': Holds three contracts with increasing levels of complexity.
-2. 'scripts': Contains four typescript files to deploy a contract. It is explained below.
-3. 'tests': Contains one Solidity test file for 'Ballot' contract & one JS test file for 'Storage' contract.
+Auction Contract
+The Auction contract implements the core functionality of a decentralized auction. Key features of this contract include:
 
-SCRIPTS
+  Auction Lifecycle Management: Handles different auction states (Started, Running, Ended, Cancelled) and provides functions to start, 
+  manage, and end auctions.
+  Bid Management: Allows users to place bids, with the highest bid being tracked and managed automatically.
+  Finalization and Cancellation: Provides functions to cancel the auction or finalize it after completion, transferring funds 
+  appropriately to the highest bidder or refunding participants if the auction is cancelled.
 
-The 'scripts' folder has four typescript files which help to deploy the 'Storage' contract using 'web3.js' and 'ethers.js' libraries.
+Key Functions
+  placeBid(): Allows participants to place bids during the auction period.
+  cancelAuction(): Allows the auction owner to cancel the auction.
+  finalizeAuction(): Finalizes the auction, distributing the funds to the auction owner and refunding any excess bids to participants.
 
-For the deployment of any other contract, just update the contract's name from 'Storage' to the desired contract and provide constructor arguments accordingly 
-in the file `deploy_with_ethers.ts` or  `deploy_with_web3.ts`
-
-In the 'tests' folder there is a script containing Mocha-Chai unit tests for 'Storage' contract.
-
-To run a script, right click on file name in the file explorer and click 'Run'. Remember, Solidity file must already be compiled.
-Output from script will appear in remix terminal.
-
-Please note, require/import is supported in a limited manner for Remix supported modules.
-For now, modules supported by Remix are ethers, web3, swarmgw, chai, multihashes, remix and hardhat only for hardhat.ethers object/plugin.
-For unsupported modules, an error like this will be thrown: '<module_name> module require is not supported by Remix IDE' will be shown.
+Modifiers
+  onlyOwner: Ensures that only the auction owner can perform certain actions.
+  notOwner: Ensures that the auction owner cannot bid in their own auction.
+  afterStart/beforeEnd: Ensures that bidding is allowed only during the auction period.
+Usage
+  This smart contract provides a decentralized platform for managing auctions, where users can securely place bids, and the auction owner 
+  can manage the auction lifecycle. It promotes transparency, fairness, and trust by using Ethereum's immutable ledger to handle all 
+  transactions and auction data.
